@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>URL & Domain Intelligence Scanner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: #58a6ff;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            font-size: 15px;
+            margin-bottom: 40px;
+        }
+
+        .scan-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 14px 18px;
+            color: #c9d1d9;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus { border-color: #58a6ff; }
+        input[type="text"]::placeholder { color: #484f58; }
+
+        button {
+            background: #238636;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover { background: #2ea043; }
+
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 28px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            font-size: 12px;
+            color: #8b949e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #238636;
+            border-radius: 50%;
+        }
+
+        .history-link {
+            margin-top: 16px;
+            text-align: right;
+        }
+
+        .history-link a {
+            color: #8b949e;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .history-link a:hover { color: #58a6ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">⚡ Threat Intelligence</div>
+        <h1>URL & Domain Scanner</h1>
+        <p class="subtitle">Analyze any domain for phishing, malware, geolocation & DNS intelligence</p>
+
+        <div class="scan-box">
+            <form method="POST" action="/scan">
+                <div class="input-row">
+                    <input type="text" name="url" placeholder="Enter domain (e.g. google.com)" required>
+                    <button type="submit">🔍 Scan</button>
+                </div>
+            </form>
+
+            <div class="features">
+                <span class="feature-tag"><span class="dot"></span> WHOIS Lookup</span>
+                <span class="feature-tag"><span class="dot"></span> DNS Records</span>
+                <span class="feature-tag"><span class="dot"></span> SSL Check</span>
+                <span class="feature-tag"><span class="dot"></span> Phishing Detection</span>
+                <span class="feature-tag"><span class="dot"></span> Geolocation</span>
+            </div>
+
+            <div class="history-link">
+                <a href="/history">📋 View Scan History →</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
