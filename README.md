@@ -31,9 +31,5 @@ cd URL-domain-scanner
 pip install -r requirements.txt
 python app.py
 ```
-
-## 📸 Screenshot
-<!-- Add a screenshot of your app here -->
-
 ## 👤 Author
-Riddhi Kishor Jadhav
+Riddhi Jadhav
