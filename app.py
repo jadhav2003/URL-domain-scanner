@@ -19,7 +19,7 @@ import io
 app = Flask(__name__)
 init_db()
 
-VIRUSTOTAL_API_KEY = "308cf0d82cd07587f4bbc9e376d51c98f6f5cd9c4eb609a1dd9a1d9633fca1c2"
+VIRUSTOTAL_API_KEY = os.environ.get("308cf0d82cd07587f4bbc9e376d51c98f6f5cd9c4eb609a1dd9a1d9633fca1c2", "your_actual_key_here")
 
 def get_ip(domain):
     try:
@@ -130,11 +130,11 @@ def check_virustotal(url):
         if response.status_code == 200:
             data = response.json()
             stats = data["data"]["attributes"]["last_analysis_stats"]
-            malicious   = stats.get("malicious", 0)
-            suspicious  = stats.get("suspicious", 0)
-            harmless    = stats.get("harmless", 0)
-            undetected  = stats.get("undetected", 0)
-            total       = malicious + suspicious + harmless + undetected
+            malicious  = stats.get("malicious", 0)
+            suspicious = stats.get("suspicious", 0)
+            harmless   = stats.get("harmless", 0)
+            undetected = stats.get("undetected", 0)
+            total      = malicious + suspicious + harmless + undetected
             engines_flagged = []
             results = data["data"]["attributes"]["last_analysis_results"]
             for engine, result in results.items():
@@ -230,7 +230,9 @@ def save_scan(url, registrar, ip_address, ssl_info, risk_level, risk_score, geo_
         geo_info['isp'] if geo_info else "Unknown"
     ))
     conn.commit()
+    scan_id = cursor.lastrowid
     conn.close()
+    return scan_id
 
 def get_all_scans():
     conn = sqlite3.connect('scans.db')
@@ -241,6 +243,14 @@ def get_all_scans():
     conn.close()
     return scans
 
+def get_total_scans():
+    conn = sqlite3.connect('scans.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM scans')
+    total = cursor.fetchone()[0]
+    conn.close()
+    return total
+
 def generate_pdf(scan_data):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4,
@@ -249,30 +259,20 @@ def generate_pdf(scan_data):
     styles = getSampleStyleSheet()
     story = []
 
-    # Title style
     title_style = ParagraphStyle(
-        'CustomTitle',
-        parent=styles['Heading1'],
-        fontSize=20,
-        textColor=colors.HexColor('#1a1a2e'),
-        spaceAfter=6
+        'CustomTitle', parent=styles['Heading1'],
+        fontSize=20, textColor=colors.HexColor('#1a1a2e'), spaceAfter=6
     )
     heading_style = ParagraphStyle(
-        'CustomHeading',
-        parent=styles['Heading2'],
-        fontSize=13,
-        textColor=colors.HexColor('#16213e'),
-        spaceBefore=14,
-        spaceAfter=6
+        'CustomHeading', parent=styles['Heading2'],
+        fontSize=13, textColor=colors.HexColor('#16213e'),
+        spaceBefore=14, spaceAfter=6
     )
     normal_style = ParagraphStyle(
-        'CustomNormal',
-        parent=styles['Normal'],
-        fontSize=10,
-        spaceAfter=4
+        'CustomNormal', parent=styles['Normal'],
+        fontSize=10, spaceAfter=4
     )
 
-    # Title
     story.append(Paragraph("URL & Domain Intelligence Report", title_style))
     story.append(Paragraph(
         f"Generated: {datetime.datetime.now().strftime('%d %B %Y, %H:%M:%S')}",
@@ -280,7 +280,6 @@ def generate_pdf(scan_data):
     ))
     story.append(Spacer(1, 0.2*inch))
 
-    # Risk banner table
     risk = scan_data['risk_level']
     if risk == "Safe":
         risk_color = colors.HexColor('#238636')
@@ -303,12 +302,10 @@ def generate_pdf(scan_data):
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('ROWHEIGHT', (0,0), (-1,-1), 30),
-        ('ROUNDEDCORNERS', [6,6,6,6]),
     ]))
     story.append(risk_table)
     story.append(Spacer(1, 0.2*inch))
 
-    # Domain Info
     story.append(Paragraph("Domain Information", heading_style))
     domain_data = [
         ["Field", "Value"],
@@ -331,7 +328,6 @@ def generate_pdf(scan_data):
     ]))
     story.append(domain_table)
 
-    # Geolocation
     if scan_data.get('geo_info'):
         story.append(Paragraph("Geolocation & ISP", heading_style))
         geo = scan_data['geo_info']
@@ -358,7 +354,6 @@ def generate_pdf(scan_data):
         ]))
         story.append(geo_table)
 
-    # Threat Indicators
     story.append(Paragraph("Threat Indicators", heading_style))
     if scan_data['flags']:
         for flag in scan_data['flags']:
@@ -366,12 +361,10 @@ def generate_pdf(scan_data):
     else:
         story.append(Paragraph("• No suspicious indicators detected", normal_style))
 
-    # Blacklist
     story.append(Paragraph("Blacklist Check", heading_style))
     for result in scan_data.get('blacklist_results', []):
         story.append(Paragraph(f"• {result}", normal_style))
 
-    # VirusTotal
     vt = scan_data.get('vt_result')
     if vt and not vt.get('error'):
         story.append(Paragraph("VirusTotal Analysis", heading_style))
@@ -389,17 +382,9 @@ def generate_pdf(scan_data):
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#dee2e6')),
             ('PADDING', (0,0), (-1,-1), 10),
-            ('BACKGROUND', (1,1), (1,1), colors.HexColor('#fff0f0')),
         ]))
         story.append(vt_table)
 
-        if vt['engines_flagged']:
-            story.append(Spacer(1, 0.1*inch))
-            story.append(Paragraph("Engines that flagged this URL:", normal_style))
-            for engine in vt['engines_flagged']:
-                story.append(Paragraph(f"• {engine}", normal_style))
-
-    # DNS Records
     story.append(Paragraph("DNS Records", heading_style))
     for record in scan_data.get('dns_records', []):
         story.append(Paragraph(f"• {record}", normal_style))
@@ -408,12 +393,12 @@ def generate_pdf(scan_data):
     buffer.seek(0)
     return buffer
 
-# Store last scan in memory for PDF download
 last_scan = {}
 
 @app.route('/')
 def home():
-    return render_template("index.html")
+    total_scans = get_total_scans()
+    return render_template("index.html", total_scans=total_scans)
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -446,7 +431,8 @@ def scan():
         risk_score = min(100, risk_score + 50)
         reputation_score = max(0, reputation_score - 50)
 
-    # Save scan data for PDF
+    scan_id = save_scan(url, registrar, ip_address, ssl_info, risk_level, risk_score, geo_info)
+
     last_scan = {
         'url': url,
         'registrar': registrar,
@@ -464,8 +450,6 @@ def scan():
         'vt_result': vt_result
     }
 
-    save_scan(url, registrar, ip_address, ssl_info, risk_level, risk_score, geo_info)
-
     return render_template(
         "result.html",
         url=url,
@@ -481,7 +465,8 @@ def scan():
         geo_info=geo_info,
         blacklist_results=blacklist_results,
         is_blacklisted=is_blacklisted,
-        vt_result=vt_result
+        vt_result=vt_result,
+        scan_id=scan_id
     )
 
 @app.route('/download-report/<path:url>')
@@ -489,7 +474,6 @@ def download_report(url):
     global last_scan
     if not last_scan:
         return "No scan data found. Please scan a URL first.", 404
-
     pdf_buffer = generate_pdf(last_scan)
     response = make_response(pdf_buffer.read())
     response.headers['Content-Type'] = 'application/pdf'
@@ -500,6 +484,18 @@ def download_report(url):
 def history():
     scans = get_all_scans()
     return render_template("history.html", scans=scans)
+
+@app.route('/share/<int:scan_id>')
+def share(scan_id):
+    conn = sqlite3.connect('scans.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM scans WHERE id = ?', (scan_id,))
+    scan = cursor.fetchone()
+    conn.close()
+    if not scan:
+        return "Scan not found", 404
+    return render_template("share.html", scan=scan)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

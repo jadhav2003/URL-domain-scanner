@@ -5,16 +5,13 @@
     <title>Scan Result — {{ url }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             background-color: #0d1117;
             color: #c9d1d9;
             font-family: 'Segoe UI', sans-serif;
             padding: 40px 20px;
         }
-
         .container { max-width: 820px; margin: 0 auto; }
-
         .header {
             display: flex;
             align-items: center;
@@ -23,9 +20,7 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-
         .back-btn {
             color: #58a6ff;
             text-decoration: none;
@@ -34,10 +29,11 @@
             padding: 8px 16px;
             border-radius: 6px;
             transition: background 0.2s;
+            background: none;
+            cursor: pointer;
+            font-family: inherit;
         }
-
         .back-btn:hover { background: #161b22; }
-
         .pdf-btn {
             background: #238636;
             color: #fff;
@@ -47,11 +43,8 @@
             font-size: 14px;
             font-weight: 600;
         }
-
         .pdf-btn:hover { background: #2ea043; }
-
         h1 { font-size: 22px; color: #ffffff; }
-
         .url-badge {
             background: #161b22;
             border: 1px solid #30363d;
@@ -61,7 +54,6 @@
             color: #58a6ff;
             font-family: monospace;
         }
-
         .risk-banner {
             border-radius: 10px;
             padding: 20px 24px;
@@ -72,49 +64,38 @@
             flex-wrap: wrap;
             gap: 12px;
         }
-
         .risk-safe       { background: #0d2119; border: 1px solid #238636; }
         .risk-suspicious { background: #2b1d00; border: 1px solid #d29922; }
         .risk-dangerous  { background: #2d0f0f; border: 1px solid #da3633; }
-
         .risk-label { font-size: 20px; font-weight: 700; }
         .risk-safe .risk-label       { color: #3fb950; }
         .risk-suspicious .risk-label { color: #e3b341; }
         .risk-dangerous .risk-label  { color: #f85149; }
-
         .risk-score { font-size: 13px; color: #8b949e; margin-top: 4px; }
-
         .score-pill {
             padding: 6px 16px;
             border-radius: 20px;
             font-weight: 700;
             font-size: 15px;
         }
-
         .risk-safe .score-pill       { background: #238636; color: #fff; }
         .risk-suspicious .score-pill { background: #d29922; color: #fff; }
         .risk-dangerous .score-pill  { background: #da3633; color: #fff; }
-
         .reputation-box { margin-top: 8px; font-size: 13px; color: #8b949e; }
-
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
             margin-bottom: 16px;
         }
-
         @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
-
         .card {
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 10px;
             padding: 20px;
         }
-
         .card.full-width { grid-column: 1 / -1; }
-
         .card-title {
             font-size: 11px;
             text-transform: uppercase;
@@ -125,7 +106,6 @@
             align-items: center;
             gap: 8px;
         }
-
         .card-title::before {
             content: '';
             display: inline-block;
@@ -134,7 +114,6 @@
             background: #58a6ff;
             border-radius: 2px;
         }
-
         .info-row {
             display: flex;
             justify-content: space-between;
@@ -143,14 +122,11 @@
             font-size: 14px;
             gap: 12px;
         }
-
         .info-row:last-child { border-bottom: none; }
         .info-label { color: #8b949e; white-space: nowrap; }
         .info-value { color: #c9d1d9; text-align: right; word-break: break-all; }
-
         .ssl-found  { color: #3fb950; font-weight: 600; }
         .ssl-missing { color: #f85149; font-weight: 600; }
-
         .dns-list { list-style: none; }
         .dns-list li {
             padding: 7px 0;
@@ -160,7 +136,6 @@
             color: #79c0ff;
         }
         .dns-list li:last-child { border-bottom: none; }
-
         .flag-list { list-style: none; }
         .flag-list li {
             padding: 8px 0;
@@ -170,7 +145,6 @@
         .flag-list li:last-child { border-bottom: none; }
         .flag-safe { color: #3fb950; }
         .flag-warn { color: #e3b341; }
-
         .rep-bar-bg {
             background: #21262d;
             border-radius: 10px;
@@ -179,12 +153,7 @@
             margin-top: 8px;
             overflow: hidden;
         }
-
-        .rep-bar-fill {
-            height: 10px;
-            border-radius: 10px;
-        }
-
+        .rep-bar-fill { height: 10px; border-radius: 10px; }
         .map-link {
             display: inline-block;
             margin-top: 10px;
@@ -193,7 +162,6 @@
             text-decoration: none;
         }
         .map-link:hover { text-decoration: underline; }
-
         .vt-box {
             border-radius: 8px;
             padding: 14px 20px;
@@ -201,7 +169,6 @@
             flex: 1;
             min-width: 80px;
         }
-
         .vt-number { font-size: 28px; font-weight: 700; }
         .vt-label  { font-size: 12px; color: #8b949e; margin-top: 4px; }
     </style>
@@ -209,7 +176,6 @@
 <body>
 <div class="container">
 
-    <!-- Header -->
     <div class="header">
         <div>
             <h1>Scan Result</h1>
@@ -218,12 +184,12 @@
             </div>
         </div>
         <div class="btn-group">
-            <a href="/download-report/{{ url }}" class="pdf-btn">📄 Download PDF Report</a>
+            <a href="/download-report/{{ url }}" class="pdf-btn">📄 Download PDF</a>
+            <button class="back-btn" onclick="shareResult()" id="shareBtn">🔗 Copy Share Link</button>
             <a href="/" class="back-btn">← New Scan</a>
         </div>
     </div>
 
-    <!-- Risk Banner -->
     {% if risk_level == 'Safe' %}
         <div class="risk-banner risk-safe">
     {% elif risk_level == 'Suspicious' %}
@@ -253,7 +219,6 @@
         </div>
     </div>
 
-    <!-- Row 1: Domain Info + SSL -->
     <div class="grid">
         <div class="card">
             <div class="card-title">Domain Info</div>
@@ -275,16 +240,11 @@
             <div class="card-title">SSL Certificate</div>
             {% if 'Found' in ssl_info %}
                 <p class="ssl-found" style="font-size:15px">✅ Certificate Found</p>
-                <p style="font-size:13px; color:#8b949e; margin-top:8px">
-                    HTTPS encryption is active
-                </p>
+                <p style="font-size:13px; color:#8b949e; margin-top:8px">HTTPS encryption is active</p>
             {% else %}
                 <p class="ssl-missing" style="font-size:15px">❌ No Certificate</p>
-                <p style="font-size:13px; color:#8b949e; margin-top:8px">
-                    Connection is not encrypted
-                </p>
+                <p style="font-size:13px; color:#8b949e; margin-top:8px">Connection is not encrypted</p>
             {% endif %}
-
             <div style="margin-top:20px">
                 <div style="font-size:12px; color:#8b949e; margin-bottom:4px">
                     Reputation Score: {{ reputation_score }}/100
@@ -301,7 +261,6 @@
         </div>
     </div>
 
-    <!-- Threat Indicators -->
     <div class="grid">
         <div class="card full-width">
             <div class="card-title">Threat Indicators</div>
@@ -316,7 +275,6 @@
         </div>
     </div>
 
-    <!-- Blacklist Check -->
     <div class="grid">
         <div class="card full-width">
             <div class="card-title">Blacklist Check</div>
@@ -342,43 +300,34 @@
         </div>
     </div>
 
-    <!-- VirusTotal -->
     <div class="grid">
         <div class="card full-width">
             <div class="card-title">VirusTotal Analysis</div>
-
             {% if vt_result.error %}
                 <p style="color:#e3b341;">⚠️ {{ vt_result.error }}</p>
             {% else %}
                 <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
-
                     <div class="vt-box" style="background:#0d2119; border:1px solid #238636;">
                         <div class="vt-number" style="color:#3fb950;">{{ vt_result.harmless }}</div>
                         <div class="vt-label">Harmless</div>
                     </div>
-
                     <div class="vt-box" style="background:#2d0f0f; border:1px solid #da3633;">
                         <div class="vt-number" style="color:#f85149;">{{ vt_result.malicious }}</div>
                         <div class="vt-label">Malicious</div>
                     </div>
-
                     <div class="vt-box" style="background:#2b1d00; border:1px solid #d29922;">
                         <div class="vt-number" style="color:#e3b341;">{{ vt_result.suspicious }}</div>
                         <div class="vt-label">Suspicious</div>
                     </div>
-
                     <div class="vt-box" style="background:#161b22; border:1px solid #30363d;">
                         <div class="vt-number" style="color:#8b949e;">{{ vt_result.undetected }}</div>
                         <div class="vt-label">Undetected</div>
                     </div>
-
                     <div class="vt-box" style="background:#161b22; border:1px solid #58a6ff;">
                         <div class="vt-number" style="color:#58a6ff;">{{ vt_result.total }}</div>
                         <div class="vt-label">Total Engines</div>
                     </div>
-
                 </div>
-
                 {% if vt_result.engines_flagged %}
                     <p style="color:#f85149; font-size:13px; font-weight:600; margin-bottom:8px;">
                         Flagged by these engines:
@@ -397,7 +346,6 @@
         </div>
     </div>
 
-    <!-- Geolocation + DNS -->
     <div class="grid">
         {% if geo_info %}
         <div class="card">
@@ -447,5 +395,22 @@
     </div>
 
 </div>
+
+<script>
+    function shareResult() {
+        const shareUrl = window.location.origin + '/share/{{ scan_id }}';
+        const btn = document.getElementById('shareBtn');
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            btn.textContent = '✅ Link Copied!';
+            btn.style.color = '#3fb950';
+            setTimeout(() => {
+                btn.textContent = '🔗 Copy Share Link';
+                btn.style.color = '#58a6ff';
+            }, 2000);
+        }).catch(() => {
+            prompt('Copy this link:', shareUrl);
+        });
+    }
+</script>
 </body>
 </html>

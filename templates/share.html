@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan Report — {{ scan['url'] }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px 20px;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        h1 { font-size: 22px; color: #fff; margin-bottom: 6px; }
+        .url-badge {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 13px;
+            color: #58a6ff;
+            font-family: monospace;
+        }
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .card-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8b949e;
+            margin-bottom: 14px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 14px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #8b949e; }
+        .info-value { color: #c9d1d9; }
+        .risk-banner {
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .risk-safe       { background:#0d2119; border:1px solid #238636; }
+        .risk-suspicious { background:#2b1d00; border:1px solid #d29922; }
+        .risk-dangerous  { background:#2d0f0f; border:1px solid #da3633; }
+        .risk-label { font-size: 20px; font-weight: 700; }
+        .risk-safe .risk-label       { color: #3fb950; }
+        .risk-suspicious .risk-label { color: #e3b341; }
+        .risk-dangerous .risk-label  { color: #f85149; }
+        .score-pill {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .risk-safe .score-pill       { background:#238636; color:#fff; }
+        .risk-suspicious .score-pill { background:#d29922; color:#fff; }
+        .risk-dangerous .score-pill  { background:#da3633; color:#fff; }
+        .back-btn {
+            display: inline-block;
+            margin-top: 24px;
+            color: #58a6ff;
+            text-decoration: none;
+            border: 1px solid #30363d;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .timestamp { color: #8b949e; font-size: 13px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Scan Report</h1>
+    <div style="margin-top:6px; margin-bottom:4px">
+        <span class="url-badge">{{ scan['url'] }}</span>
+    </div>
+    <p class="timestamp">Scanned at: {{ scan['scanned_at'] }}</p>
+
+    {% if scan['risk_level'] == 'Safe' %}
+        <div class="risk-banner risk-safe">
+    {% elif scan['risk_level'] == 'Suspicious' %}
+        <div class="risk-banner risk-suspicious">
+    {% else %}
+        <div class="risk-banner risk-dangerous">
+    {% endif %}
+        <div class="risk-label">
+            {% if scan['risk_level'] == 'Safe' %}✅ Safe
+            {% elif scan['risk_level'] == 'Suspicious' %}⚠️ Suspicious
+            {% else %}🚨 Dangerous{% endif %}
+        </div>
+        <div class="score-pill">Risk Score: {{ scan['risk_score'] }}</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Domain Info</div>
+        <div class="info-row">
+            <span class="info-label">URL</span>
+            <span class="info-value">{{ scan['url'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Registrar</span>
+            <span class="info-value">{{ scan['registrar'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">IP Address</span>
+            <span class="info-value">{{ scan['ip_address'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">SSL Status</span>
+            <span class="info-value">{{ scan['ssl_status'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Country</span>
+            <span class="info-value">{{ scan['country'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">City</span>
+            <span class="info-value">{{ scan['city'] }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">ISP</span>
+            <span class="info-value">{{ scan['isp'] }}</span>
+        </div>
+    </div>
+
+    <a href="/" class="back-btn">← Scan another domain</a>
+</div>
+</body>
+</html>
