@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, make_response
+from flask_cors import CORS
 import whois
 import socket
 import dns.resolver
@@ -17,9 +18,14 @@ from reportlab.lib.units import inch
 import io
 
 app = Flask(__name__)
-init_db()
 
-VIRUSTOTAL_API_KEY = os.environ.get("308cf0d82cd07587f4bbc9e376d51c98f6f5cd9c4eb609a1dd9a1d9633fca1c2", "your_actual_key_here")
+CORS(
+    app,
+    resources={r"/*": {"origins": "http://localhost:5173"}}
+)
+
+init_db()
+VIRUSTOTAL_API_KEY = os.environ.get("VIRUSTOTAL_API_KEY", "308cf0d82cd07587f4bbc9e376d51c98f6f5cd9c4eb609a1dd9a1d9633fca1c2")
 
 def get_ip(domain):
     try:
@@ -434,38 +440,22 @@ def scan():
     scan_id = save_scan(url, registrar, ip_address, ssl_info, risk_level, risk_score, geo_info)
 
     last_scan = {
-        'url': url,
-        'registrar': registrar,
-        'ip_address': ip_address,
-        'dns_records': dns_records,
-        'ssl_info': ssl_info,
-        'flags': flags,
-        'risk_level': risk_level,
-        'risk_score': risk_score,
-        'reputation_score': reputation_score,
-        'domain_age': domain_age,
-        'geo_info': geo_info,
-        'blacklist_results': blacklist_results,
-        'is_blacklisted': is_blacklisted,
-        'vt_result': vt_result
+        'url': url, 'registrar': registrar, 'ip_address': ip_address,
+        'dns_records': dns_records, 'ssl_info': ssl_info, 'flags': flags,
+        'risk_level': risk_level, 'risk_score': risk_score,
+        'reputation_score': reputation_score, 'domain_age': domain_age,
+        'geo_info': geo_info, 'blacklist_results': blacklist_results,
+        'is_blacklisted': is_blacklisted, 'vt_result': vt_result
     }
 
     return render_template(
         "result.html",
-        url=url,
-        registrar=registrar,
-        ip_address=ip_address,
-        dns_records=dns_records,
-        ssl_info=ssl_info,
-        flags=flags,
-        risk_level=risk_level,
-        risk_score=risk_score,
-        reputation_score=reputation_score,
-        domain_age=domain_age,
-        geo_info=geo_info,
-        blacklist_results=blacklist_results,
-        is_blacklisted=is_blacklisted,
-        vt_result=vt_result,
+        url=url, registrar=registrar, ip_address=ip_address,
+        dns_records=dns_records, ssl_info=ssl_info, flags=flags,
+        risk_level=risk_level, risk_score=risk_score,
+        reputation_score=reputation_score, domain_age=domain_age,
+        geo_info=geo_info, blacklist_results=blacklist_results,
+        is_blacklisted=is_blacklisted, vt_result=vt_result,
         scan_id=scan_id
     )
 
@@ -496,6 +486,83 @@ def share(scan_id):
     if not scan:
         return "Scan not found", 404
     return render_template("share.html", scan=scan)
+
+# ---- NEW API ROUTES FOR REACT ----
+
+@app.route('/api/scan', methods=['POST'])
+def api_scan():
+    global last_scan
+    url = request.form['url']
+
+    try:
+        domain_info = whois.whois(url)
+        registrar = domain_info.registrar
+    except:
+        registrar = "Not Found"
+        domain_info = None
+
+    ip_address = get_ip(url)
+    dns_records = get_dns_records(url)
+    ssl_info = get_ssl_info(url)
+    geo_info = get_geo_info(ip_address)
+    flags, risk_level, risk_score, reputation_score, domain_age = check_phishing_indicators(url, domain_info, ssl_info)
+    blacklist_results, is_blacklisted = check_blacklist(url, ip_address)
+    vt_result = check_virustotal(url)
+
+    if vt_result and not vt_result.get("error"):
+        if vt_result["malicious"] > 0:
+            risk_level = "Dangerous"
+            risk_score = min(100, risk_score + vt_result["malicious"] * 5)
+            reputation_score = max(0, reputation_score - vt_result["malicious"] * 5)
+
+    if is_blacklisted:
+        risk_level = "Dangerous"
+        risk_score = min(100, risk_score + 50)
+        reputation_score = max(0, reputation_score - 50)
+
+    scan_id = save_scan(url, registrar, ip_address, ssl_info, risk_level, risk_score, geo_info)
+
+    last_scan = {
+        'url': url, 'registrar': registrar, 'ip_address': ip_address,
+        'dns_records': dns_records, 'ssl_info': ssl_info, 'flags': flags,
+        'risk_level': risk_level, 'risk_score': risk_score,
+        'reputation_score': reputation_score, 'domain_age': domain_age,
+        'geo_info': geo_info, 'blacklist_results': blacklist_results,
+        'is_blacklisted': is_blacklisted, 'vt_result': vt_result
+    }
+
+    return {
+        'url': url,
+        'registrar': registrar,
+        'ip_address': ip_address,
+        'dns_records': dns_records,
+        'ssl_info': ssl_info,
+        'flags': flags,
+        'risk_level': risk_level,
+        'risk_score': risk_score,
+        'reputation_score': reputation_score,
+        'domain_age': domain_age,
+        'geo_info': geo_info,
+        'blacklist_results': blacklist_results,
+        'is_blacklisted': is_blacklisted,
+        'vt_result': vt_result,
+        'scan_id': scan_id
+    }
+
+@app.route('/api/history')
+def api_history():
+    conn = sqlite3.connect('scans.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM scans ORDER BY scanned_at DESC')
+    scans = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return scans
+
+@app.route('/api/total-scans')
+def api_total_scans():
+    total = get_total_scans()
+    return {'total': total}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

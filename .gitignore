@@ -2,3 +2,6 @@ scans.db
 __pycache__/
 *.pyc
 .env
+
+node_modules/
+frontend/node_modules/
